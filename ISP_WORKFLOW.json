@@ -1,0 +1,2323 @@
+{
+  "name": "ISP WORKFLOW",
+  "nodes": [
+    {
+      "parameters": {},
+      "name": "Start",
+      "type": "n8n-nodes-base.start",
+      "typeVersion": 1,
+      "position": [
+        560,
+        2340
+      ]
+    },
+    {
+      "parameters": {
+        "fromEmail": "Project3.2022.nyp@gmail.com",
+        "toEmail": "={{$node[\"Configuration sheet ( form submittion flow )\"].json[\"Approver Email\"]}}",
+        "subject": "=Leave request {{$node[\"Set form submittion\"].json[\"Form Id\"]}}",
+        "html": "={{$node[\"Set configuration ( form submittion flow )\"].json[\"approver email\"]}}\n\n<div class=\"ISPROW\" style=\"display:flex;flex-direction: row;align-items: center;justify-content: space-between;\">\n    <a href=\"https://modern-stingray-7.hooks.n8n.cloud/webhook/emailSubmit?callback=Approve_{{$node[\"Set form submittion\"].json[\"Form Id\"]}}&firstname={{$node[\"Set form submittion\"].json[\"First Name\"]}}&lastname={{$node[\"Set form submittion\"].json[\"Last Name\"]}}&email={{$node[\"Set form submittion\"].json[\"Email\"]}}&phonenum={{$node[\"Set form submittion\"].json[\"PhoneNum\"]}}&startleavedate={{$node[\"Set form submittion\"].json[\"Start Leave Date\"]}}&endleavedate={{$node[\"Set form submittion\"].json[\"End Leave Date\"]}}&leavereason={{$node[\"Set form submittion\"].json[\"Leave Reason\"]}}\" class=\"ISPapprove-btn\" style=\"text-decoration: none;\">\n      <div class=\"ISPbtn\" style=\"padding: 0 20px;height: 40px; background-color: green;color: white;font-weight: bold;border-radius: 20px;display: flex;align-items: center;\">\n        Approve\n      </div>\n    </a>\n\n    <a href=\"https://modern-stingray-7.hooks.n8n.cloud/webhook/emailSubmit?callback=Reject_{{$node[\"Set form submittion\"].json[\"Form Id\"]}}&firstname={{$node[\"Set form submittion\"].json[\"First Name\"]}}&lastname={{$node[\"Set form submittion\"].json[\"Last Name\"]}}&email={{$node[\"Set form submittion\"].json[\"Email\"]}}&phonenum={{$node[\"Set form submittion\"].json[\"PhoneNum\"]}}&startleavedate={{$node[\"Set form submittion\"].json[\"Start Leave Date\"]}}&endleavedate={{$node[\"Set form submittion\"].json[\"End Leave Date\"]}}&leavereason={{$node[\"Set form submittion\"].json[\"Leave Reason\"]}}\" class=\"ISPreject-btn\" style=\"text-decoration: none;\">\n      <div class=\"ISPbtn\" style=\"padding: 0 30px;height: 40px; background-color: red;color: white;font-weight: bold;border-radius: 20px;display: flex;align-items: center;\">\n        Reject\n      </div>\n    </a>\n  </div>",
+        "options": {}
+      },
+      "name": "Send approver email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 1,
+      "position": [
+        -2940,
+        3680
+      ],
+      "notesInFlow": true,
+      "credentials": {
+        "smtp": {
+          "id": "2",
+          "name": "SMTP account 2"
+        }
+      },
+      "notes": "Send approve and reject action via email"
+    },
+    {
+      "parameters": {
+        "fromEmail": "Project3.2022.nyp@gmail.com",
+        "toEmail": "={{$node[\"New record on leave record log Sheet\"].json[\"Email\"]}}",
+        "subject": "Leave request sent",
+        "text": "={{$node[\"Set configuration ( form submittion flow )\"].json[\"applicant notification\"]}}",
+        "html": "=",
+        "options": {}
+      },
+      "name": "Notify applicant email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 1,
+      "position": [
+        -4000,
+        3660
+      ],
+      "notesInFlow": true,
+      "credentials": {
+        "smtp": {
+          "id": "2",
+          "name": "SMTP account 2"
+        }
+      },
+      "notes": "Notify applicant about success form submittion and review by approver via email"
+    },
+    {
+      "parameters": {
+        "chatId": "={{$node[\"Set configuration ( form submittion flow )\"].json[\"telegram Id\"]}}",
+        "text": "={{$node[\"Set configuration ( form submittion flow )\"].json[\"applicant notification\"]}}",
+        "additionalFields": {}
+      },
+      "name": "Notify applicant telegram",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        -4000,
+        3920
+      ],
+      "notesInFlow": true,
+      "credentials": {
+        "telegramApi": {
+          "id": "1",
+          "name": "Telegram leave request account"
+        }
+      },
+      "notes": "Notify applicant about success form submittion and review by approver via telegram"
+    },
+    {
+      "parameters": {
+        "calendar": "={{$node[\"Set configuration ( callback flow )\"].json[\"calendar Id\"]}}",
+        "start": "={{$node[\"Find applicant sheet\"].json[\"Start Leave Date\"]}} 00:00:00",
+        "end": "={{$node[\"Find applicant sheet\"].json[\"End Leave Date\"]}}  00:00:00",
+        "additionalFields": {
+          "description": "=Employee {{$node[\"Find applicant sheet\"].json[\"First Name\"]}} {{$node[\"Find applicant sheet\"].json[\"Last Name\"]}} has taken a leave from {{$node[\"Find applicant sheet\"].json[\"Start Leave Date\"]}} to {{$node[\"Find applicant sheet\"].json[\"End Leave Date\"]}} due to {{$node[\"Find applicant sheet\"].json[\"Leave Reason\"]}}.\n\nContact details: \nPhoneNo : {{$node[\"Find applicant sheet\"].json[\"PhoneNum\"]}}\nEmail :{{$node[\"Find applicant sheet\"].json[\"Email\"]}}",
+          "summary": "=Leave request Id {{$node[\"Find applicant sheet\"].json[\"Form Id\"]}}"
+        }
+      },
+      "name": "Calendar update",
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1,
+      "position": [
+        600,
+        3620
+      ],
+      "notesInFlow": true,
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "7",
+          "name": "Google Calendar account"
+        }
+      },
+      "notes": "Update applicant leave detail on google calendar"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$node[\"Get callback function\"].json[\"CallBack\"]}}",
+              "value2": "approved"
+            }
+          ]
+        }
+      },
+      "name": "Approve reject if",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        360,
+        3760
+      ],
+      "notesInFlow": true,
+      "notes": "If callback is approve, go to true. Else go to false"
+    },
+    {
+      "parameters": {
+        "chatId": "={{$node[\"Set configuration ( callback flow )\"].json[\"telegram Id\"]}}",
+        "text": "={{$node[\"Set configuration ( callback flow )\"].json[\"approver\"]}}",
+        "additionalFields": {}
+      },
+      "name": "Approver action telegram",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        60,
+        3900
+      ],
+      "notesInFlow": true,
+      "credentials": {
+        "telegramApi": {
+          "id": "1",
+          "name": "Telegram leave request account"
+        }
+      },
+      "notes": "Send telegram to approver about callback result"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json[\"Process Status\"]}}",
+              "value2": "Pending"
+            }
+          ]
+        }
+      },
+      "name": "Double action if",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        -1160,
+        3760
+      ],
+      "notesInFlow": true,
+      "notes": "If there is no 'approved' or 'rejected' on google sheet applicant process status, go to true. Else go to false."
+    },
+    {
+      "parameters": {
+        "fromEmail": "Project3.2022.nyp@gmail.com",
+        "toEmail": "={{$node[\"Find applicant sheet\"].json[\"Email\"]}}",
+        "subject": "=Leave request {{$node[\"Get callback function\"].json[\"CallBack\"]}}",
+        "text": "={{$node[\"Set configuration ( callback flow )\"].json[\"applicant\"]}}",
+        "options": {}
+      },
+      "name": "Applicant outcome email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 1,
+      "position": [
+        1200,
+        3620
+      ],
+      "notesInFlow": true,
+      "credentials": {
+        "smtp": {
+          "id": "2",
+          "name": "SMTP account 2"
+        }
+      },
+      "notes": "Send email to applicant about callback result"
+    },
+    {
+      "parameters": {
+        "functionCode": "const callBackArray = items[0].json.callback_query.data.split(\"_\");\nlet callback;\nif (callBackArray[0] == \"Approve\"){\n  callback = callBackArray[0]+\"d\";\n}\nelse{\n  callback = callBackArray[0]+\"ed\";\n}\n\nreturn {\n  \"CallBack\" : callback.toLowerCase(),\n  \"Form Id\" : callBackArray[1]\n};\n\n"
+      },
+      "name": "Telegram callback function",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        -2020,
+        3920
+      ],
+      "notesInFlow": true,
+      "notes": "Get applicant id and callback from telegram trigger\n"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "=<!doctype html>\n<html lang=\"en\">\n\n<head>\n  <meta charset=\"utf-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n\n  <link href=\"https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css\" rel=\"stylesheet\"\n    integrity=\"sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3\" crossorigin=\"anonymous\">\n\n  <title>Leave Request</title>\n</head>\n\n\n<body>\n\n  <div class=\"header\" style=\"background-color: lightgray;position: fixed;left: 0;top: 0;width: 100%;text-align: center;\">\n    <p style=\"margin: auto;font-size: 36px;\">The automation project</p>\n  </div>\n\n  <section style=\"padding: 10px;height: 960px;width: 50%;margin: auto;\">\n    <h1 style=\"margin-top: 100px;margin-bottom: 100px;\">Leave Request Approval</h1>\n\t<h2 style=\"margin-top: 100px;margin-bottom: 100px;\">Leave request form {{$node[\"Email callback function\"].json[\"Form Id\"]}} </h2>\n    <p style=\"font-size: 36px;\">You have  {{$node[\"Get callback function\"].json[\"CallBack\"]}} {{$node[\"Email CallBack set\"].json[\"First Name\"]}} {{$node[\"Email CallBack set\"].json[\"Last Name\"]}} between {{$node[\"Email CallBack set\"].json[\"Start Leave Date\"]}} to {{$node[\"Email CallBack set\"].json[\"End Leave Date\"]}} due to {{$node[\"Email CallBack set\"].json[\"Leave Reason\"]}}.</p>\n\n<h2>Applicant Contact Information:</h2>\n<p>Email : {{$node[\"Email CallBack set\"].json[\"Email\"]}}</p>\n<p>Phone no. : {{$node[\"Email CallBack set\"].json[\"PhoneNum\"]}}</p>\n      \n  </section>\n\n  <footer style=\"background-color: lightgray;position: fixed;left: 0;bottom: 0;width: 100%;text-align: center;\">\n    <p style=\"margin: auto;font-size: 36px;\">&copy;NYP Project 2022</p>\n  </footer>\n  <script src=\"https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js\"\n    integrity=\"sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p\"\n    crossorigin=\"anonymous\"></script>\n</body>\n\n\n</html>",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "text/html; charset=UTF-8"
+              }
+            ]
+          }
+        }
+      },
+      "name": "Approver callback website",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "position": [
+        -780,
+        3500
+      ],
+      "typeVersion": 1,
+      "notesInFlow": true,
+      "notes": "The website should shows the approver that the applicant request has been completed since action has been taken.\n\nThe website should shows the approver about the callback result."
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "80528928-7b9a-4d2b-950c-4d51ed9cc8a6",
+        "options": {}
+      },
+      "name": "Google form trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        -6340,
+        3780
+      ],
+      "webhookId": "80528928-7b9a-4d2b-950c-4d51ed9cc8a6",
+      "notesInFlow": true,
+      "notes": "Trigger when applicant submitted new google form."
+    },
+    {
+      "parameters": {
+        "chatId": "={{$node[\"Set configuration ( form submittion flow )\"].json[\"telegram Id\"]}}",
+        "text": "={{$node[\"Set configuration ( form submittion flow )\"].json[\"approver telegram\"]}}",
+        "replyMarkup": "inlineKeyboard",
+        "inlineKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "Approve ✅",
+                    "additionalFields": {
+                      "callback_data": "=Approve_{{$node[\"Set form submittion\"].json[\"Form Id\"]}}"
+                    }
+                  },
+                  {
+                    "text": "Reject 🚫",
+                    "additionalFields": {
+                      "callback_data": "=Reject_{{$node[\"Set form submittion\"].json[\"Form Id\"]}}"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "additionalFields": {}
+      },
+      "name": "Send approver telegram",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        -2940,
+        3940
+      ],
+      "notesInFlow": true,
+      "credentials": {
+        "telegramApi": {
+          "id": "1",
+          "name": "Telegram leave request account"
+        }
+      },
+      "notes": "Send approve and reject action via telegram\n"
+    },
+    {
+      "parameters": {
+        "updates": [
+          "callback_query"
+        ],
+        "additionalFields": {}
+      },
+      "name": "Approver telegram callback trigger",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1,
+      "position": [
+        -2520,
+        3920
+      ],
+      "webhookId": "2f0df956-d13a-4bce-a94d-e49080d3bc99",
+      "notesInFlow": true,
+      "credentials": {
+        "telegramApi": {
+          "id": "1",
+          "name": "Telegram leave request account"
+        }
+      },
+      "notes": "Trigger when approver take an action from telegram"
+    },
+    {
+      "parameters": {
+        "fromEmail": "=Project3.2022.nyp@gmail.com",
+        "toEmail": "={{$node[\"Configuration sheet ( callback flow )\"].json[\"Approver Email\"]}}",
+        "subject": "=Form Id {{$node[\"Get callback function\"].json[\"CallBack\"]}} {{$node[\"Get callback function\"].json[\"Form Id\"]}}",
+        "text": "={{$node[\"Set configuration ( callback flow )\"].json[\"approver\"]}}",
+        "options": {}
+      },
+      "name": "Approver action email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 1,
+      "position": [
+        60,
+        3620
+      ],
+      "notesInFlow": true,
+      "credentials": {
+        "smtp": {
+          "id": "2",
+          "name": "SMTP account 2"
+        }
+      },
+      "notes": "Send email to approver about callback result"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "operation": "lookup",
+        "sheetId": "1g3wRIw7doc0FQdMOayUS7uRycxW14pRaQoh2dTK-gcw",
+        "range": "A:K",
+        "lookupColumn": "Form Id",
+        "lookupValue": "={{$node[\"Get callback function\"].json[\"Form Id\"]}}",
+        "options": {
+          "valueRenderMode": "FORMATTED_VALUE"
+        }
+      },
+      "name": "Find applicant sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 1,
+      "position": [
+        -1420,
+        3760
+      ],
+      "notesInFlow": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "4",
+          "name": "Google Sheets account"
+        }
+      },
+      "notes": "Find applicant row on leave request form based on Form Id"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "operation": "append",
+        "sheetId": "1g3wRIw7doc0FQdMOayUS7uRycxW14pRaQoh2dTK-gcw",
+        "range": "A:K",
+        "options": {
+          "valueInputMode": "USER_ENTERED"
+        }
+      },
+      "name": "New record on leave record log Sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 1,
+      "position": [
+        -4880,
+        3780
+      ],
+      "notesInFlow": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "4",
+          "name": "Google Sheets account"
+        }
+      },
+      "notes": "Write applicant's detail on leave record log sheet"
+    },
+    {
+      "parameters": {
+        "keepOnlySet": true,
+        "values": {
+          "string": [
+            {
+              "name": "callback",
+              "value": "={{$json[\"query\"][\"callback\"]}}"
+            },
+            {
+              "name": "First Name",
+              "value": "={{$json[\"query\"][\"firstname\"]}}"
+            },
+            {
+              "name": "Last Name",
+              "value": "={{$json[\"query\"][\"lastname\"]}}"
+            },
+            {
+              "name": "Email",
+              "value": "={{$json[\"query\"][\"email\"]}}"
+            },
+            {
+              "name": "Leave Reason",
+              "value": "={{$json[\"query\"][\"leavereason\"]}}"
+            },
+            {
+              "name": "Start Leave Date",
+              "value": "={{$json[\"query\"][\"startleavedate\"]}}"
+            },
+            {
+              "name": "End Leave Date",
+              "value": "={{$json[\"query\"][\"endleavedate\"]}}"
+            }
+          ],
+          "number": [
+            {
+              "name": "PhoneNum",
+              "value": "={{$json[\"query\"][\"phonenum\"]}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Email CallBack set",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        -2280,
+        3640
+      ],
+      "notesInFlow": true,
+      "notes": "Set applicant detail from email webhook based on callback url"
+    },
+    {
+      "parameters": {
+        "functionCode": "return items;"
+      },
+      "name": "Get callback function",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        -1680,
+        3760
+      ],
+      "notesInFlow": true,
+      "notes": "Get callback and form id from telegram or email "
+    },
+    {
+      "parameters": {
+        "functionCode": "const callBackArray = items[0].json.callback.split(\"_\");\nlet callback;\nif (callBackArray[0] == \"Approve\"){\n  callback = callBackArray[0]+\"d\";\n}\nelse{\n  callback = callBackArray[0]+\"ed\";\n}\n\nreturn {\n  \"CallBack\" : callback.toLowerCase(),\n  \"Form Id\" : callBackArray[1].replace(/\\s/g, '')\n};\n\n"
+      },
+      "name": "Email callback function",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        -2020,
+        3640
+      ],
+      "notesInFlow": true,
+      "notes": "Get applicant id and callback from email webhook trigger\n"
+    },
+    {
+      "parameters": {
+        "functionCode": "var item;\nvar renamed_documents_array = [];\nvar item_number;\n\nfor (var a=0;a < items[0].json.documents.length;a++){\n  item_number = a+1;\n  item = {\n    \"file\" : items[0].json.documents[a],\n    \"renamed file\" : items[0].json[\"form Id\"] + \"_\"+items[0].json[\"first name\"]+\"_\"+items[0].json[\"last name\"]+\"_\"+item_number,\n  }\n  renamed_documents_array.push(item);\n}\n\nreturn renamed_documents_array;"
+      },
+      "name": "Rename Supporting document function",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        -4860,
+        3520
+      ],
+      "notesInFlow": true,
+      "notes": "Rename all supporting documents based on form id, first name, last name and item No"
+    },
+    {
+      "parameters": {
+        "functionCode": "// Code here will run only once, no matter how many input items there are.\n// More info and help: https://docs.n8n.io/nodes/n8n-nodes-base.function\n// Tip: You can use luxon for dates and $jmespath for querying JSON structures\n\n// Loop over inputs and add a new field called 'myNewField' to the JSON of each one\nreturn {\n  \"documents\": $node[\"Google form trigger\"].json[\"body\"][\"Supporting documents (Image, pdf, doc, etc)\"],\n  \"first name\" : $node[\"Google form trigger\"].json[\"body\"][\"First name\"],\n  \"last name\" : $node[\"Google form trigger\"].json[\"body\"][\"Last name\"],\n  \"form Id\" : $node[\"Set DateTime and new Form Id function\"].json[\"Form Id\"],\n};"
+      },
+      "name": "Gather supporting documents function",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        -5160,
+        3520
+      ],
+      "notesInFlow": true,
+      "notes": "Gather supporting documents, form id, first name and last name."
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "operation": "update",
+        "fileId": "={{$json[\"file\"]}}",
+        "updateFields": {
+          "fileName": "={{$json[\"renamed file\"]}}"
+        },
+        "options": {}
+      },
+      "name": "Supporting document rename on google drive",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 1,
+      "position": [
+        -4580,
+        3520
+      ],
+      "notesInFlow": true,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "5",
+          "name": "Google Drive account"
+        }
+      },
+      "notes": "Rename supporting documents on google drive based on document Id."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$node[\"Google form trigger\"].json[\"body\"][\"Supporting documents (Image, pdf, doc, etc)\"][0]}}",
+              "operation": "isNotEmpty"
+            }
+          ]
+        }
+      },
+      "name": "Check supporting document IF",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        -5440,
+        3780
+      ],
+      "notesInFlow": true,
+      "notes": "Check if google form has supporting document. If has at least 1, go to true and main flow. Else go to main flow only."
+    },
+    {
+      "parameters": {
+        "triggerTimes": {
+          "item": [
+            {
+              "mode": "everyX",
+              "value": 30,
+              "unit": "minutes"
+            }
+          ]
+        }
+      },
+      "name": "Cron",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [
+        -2740,
+        2700
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json[\"Process Status\"]}}",
+              "value2": "Pending"
+            }
+          ]
+        }
+      },
+      "name": "Pending check",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        -2240,
+        2700
+      ],
+      "notesInFlow": true,
+      "notes": "Check if applicant request is pending\nIf it is, go true. Else go false\n"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json[\"deadline\"]}}",
+              "value2": "true"
+            }
+          ]
+        }
+      },
+      "name": "Deadline If",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        -840,
+        2700
+      ],
+      "notesInFlow": true,
+      "notes": "Check if deadline is true. If its true, go to true ( deadline flow ). Else go to false ( reminder flow )"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "operation": "update",
+        "sheetId": "1g3wRIw7doc0FQdMOayUS7uRycxW14pRaQoh2dTK-gcw",
+        "range": "A:K",
+        "key": "Form Id",
+        "options": {
+          "valueInputMode": "USER_ENTERED"
+        }
+      },
+      "name": "Deadline applicant sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 1,
+      "position": [
+        640,
+        2700
+      ],
+      "notesInFlow": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "4",
+          "name": "Google Sheets account"
+        }
+      },
+      "notes": "Update applicant's process status and  \nendDate "
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "=<!doctype html>\n<html lang=\"en\">\n\n<head>\n  <meta charset=\"utf-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n\n  <link href=\"https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css\" rel=\"stylesheet\"\n    integrity=\"sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3\" crossorigin=\"anonymous\">\n\n  <title>Leave Request</title>\n</head>\n\n\n<body>\n\n  <div class=\"header\" style=\"background-color: lightgray;position: fixed;left: 0;top: 0;width: 100%;text-align: center;\">\n    <p style=\"margin: auto;font-size: 36px;\">The automation project</p>\n  </div>\n\n  <section style=\"padding: 10px;height: 960px;width: 50%;margin: auto;\">\n    <h1 style=\"margin-top: 100px;margin-bottom: 100px;\">Leave Request Approval</h1>\n\t<h2 style=\"margin-top: 100px;margin-bottom: 100px;\">Leave request form {{$node[\"Email callback function\"].json[\"Form Id\"]}} </h2>\n    <p style=\"font-size: 36px;\">You have already {{$json[\"Process Status\"]}} {{$node[\"Email CallBack set\"].json[\"First Name\"]}} {{$node[\"Email CallBack set\"].json[\"Last Name\"]}} between {{$node[\"Email CallBack set\"].json[\"Start Leave Date\"]}} to {{$node[\"Email CallBack set\"].json[\"End Leave Date\"]}} due to {{$node[\"Email CallBack set\"].json[\"Leave Reason\"]}} on {{$node[\"Find applicant sheet\"].json[\"Process End Date\"]}}.</p>\n\n<h2>Applicant Contact Information:</h2>\n<p>Email : {{$node[\"Email CallBack set\"].json[\"Email\"]}}</p>\n<p>Phone no. : {{$node[\"Email CallBack set\"].json[\"PhoneNum\"]}}</p>\n      \n  </section>\n\n  <footer style=\"background-color: lightgray;position: fixed;left: 0;bottom: 0;width: 100%;text-align: center;\">\n    <p style=\"margin: auto;font-size: 36px;\">&copy;NYP Project 2022</p>\n  </footer>\n  <script src=\"https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js\"\n    integrity=\"sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p\"\n    crossorigin=\"anonymous\"></script>\n</body>\n\n\n</html>",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "text/html; charset=UTF-8"
+              }
+            ]
+          }
+        }
+      },
+      "name": "Approver existed callback website",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "position": [
+        -780,
+        4000
+      ],
+      "typeVersion": 1,
+      "notesInFlow": true,
+      "notes": "This node will only work if the flow was triggered by email webhook trigger.\n\nThe website should shows the approver that the applicant request has been completed since action has been taken.\n"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "sheetId": "1g3wRIw7doc0FQdMOayUS7uRycxW14pRaQoh2dTK-gcw",
+        "range": "A:A",
+        "options": {}
+      },
+      "name": "Check form Id sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 1,
+      "position": [
+        -6040,
+        3780
+      ],
+      "alwaysOutputData": true,
+      "notesInFlow": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "4",
+          "name": "Google Sheets account"
+        }
+      },
+      "notes": "Check for all form Id in leave request sheet"
+    },
+    {
+      "parameters": {
+        "functionCode": "let formId = Math.floor(100000 + Math.random() * 900000);\nvar currentDateTime = new Date().toLocaleString('en-SG')\nif(items[0].json['Form Id'] == null){\n\n}\nelse{\n  while(items[0].json['Form Id'] == formId){\n    formId = Math.floor(100000 + Math.random() * 900000)+1;\n  }\n}\n\nreturn {\n  \"Form Id\"  : formId,\n  \"Form Date\":currentDateTime\n};\n\n"
+      },
+      "name": "Set DateTime and new Form Id function",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        -5720,
+        3780
+      ],
+      "notesInFlow": true,
+      "notes": "Set current dateTime and new form Id for form submittion date and form Id respectively.\n"
+    },
+    {
+      "parameters": {
+        "keepOnlySet": true,
+        "values": {
+          "string": [
+            {
+              "name": "First Name",
+              "value": "={{$node[\"Google form trigger\"].json[\"body\"][\"First name\"]}}"
+            },
+            {
+              "name": "Email",
+              "value": "={{$node[\"Google form trigger\"].json[\"body\"][\"Email\"]}}"
+            },
+            {
+              "name": "Last Name",
+              "value": "={{$node[\"Google form trigger\"].json[\"body\"][\"Last name\"]}}"
+            },
+            {
+              "name": "Leave Reason",
+              "value": "={{$node[\"Google form trigger\"].json[\"body\"][\"Reason of leaving\"]}}"
+            },
+            {
+              "name": "Form Submittion Date",
+              "value": "={{$node[\"Set DateTime and new Form Id function\"].json[\"Form Date\"]}}"
+            },
+            {
+              "name": "Start Leave Date",
+              "value": "={{$node[\"Google form trigger\"].json[\"body\"][\"Leave start date\"]}}"
+            },
+            {
+              "name": "End Leave Date",
+              "value": "= {{$node[\"Google form trigger\"].json[\"body\"][\"Leave end date\"]}}"
+            },
+            {
+              "name": "Process Status",
+              "value": "Pending"
+            },
+            {
+              "name": "Process End Date",
+              "value": "Ongoing"
+            }
+          ],
+          "number": [
+            {
+              "name": "PhoneNum",
+              "value": "= {{$node[\"Google form trigger\"].json[\"body\"][\"Phone number\"]}}"
+            },
+            {
+              "name": "Form Id",
+              "value": "={{$node[\"Set DateTime and new Form Id function\"].json[\"Form Id\"]}}"
+            }
+          ]
+        },
+        "options": {
+          "dotNotation": true
+        }
+      },
+      "name": "Set form submittion",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        -5180,
+        3780
+      ],
+      "notesInFlow": true,
+      "notes": "Set form submittion based on leave request google sheet format"
+    },
+    {
+      "parameters": {
+        "path": "=emailSubmit",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "name": "Approver email callback trigger",
+      "type": "n8n-nodes-base.webhook",
+      "position": [
+        -2520,
+        3640
+      ],
+      "webhookId": "22a0e705-bcbd-4d07-a819-2e98191e8848",
+      "typeVersion": 1,
+      "notesInFlow": true,
+      "notes": "Trigger when approver take an action from email"
+    },
+    {
+      "parameters": {
+        "functionCode": "var callbackDate = new Date().toLocaleString('en-SG')\nitems[0].json[\"Process end date\"] = callbackDate;\nitems[0].json[\"Form Id\"] = parseInt(items[0].json[\"Form Id\"]);\nreturn items;"
+      },
+      "name": "Set callback dateTime and form Id Function",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        -780,
+        3740
+      ],
+      "notesInFlow": true,
+      "notes": "Set current dateTime and callback form Id."
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "sheetId": "1RSy4ShIcrlvIdk1y_yQ9WFODx38f7SrKzs7X50b2WRU",
+        "range": "A:O",
+        "options": {}
+      },
+      "name": "Configuration sheet ( callback flow )",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 1,
+      "position": [
+        -500,
+        3740
+      ],
+      "notesInFlow": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "4",
+          "name": "Google Sheets account"
+        }
+      },
+      "notes": "Get configuration from configuration sheet"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "sheetId": "1RSy4ShIcrlvIdk1y_yQ9WFODx38f7SrKzs7X50b2WRU",
+        "range": "A:O",
+        "options": {}
+      },
+      "name": "Configuration sheet ( form submittion flow )",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 1,
+      "position": [
+        -4580,
+        3780
+      ],
+      "notesInFlow": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "4",
+          "name": "Google Sheets account"
+        }
+      },
+      "notes": "Get configuration from configuration sheet"
+    },
+    {
+      "parameters": {
+        "functionCode": "//Applicant notification\r\nvar replaceApplicantName = items[0].json[\"Applicant form submittion notification\"].replace(/<name>/g,$node[\"New record on leave record log Sheet\"].json[\"First Name\"]+\" \"+$node[\"New record on leave record log Sheet\"].json[\"Last Name\"])\r\nvar replaceApplicantDate = replaceApplicantName.replace(/<submissionDate>/g,$node[\"New record on leave record log Sheet\"].json[\"Form Submittion Date\"])\r\n\r\n//Approver notification\r\nvar replaceApproverName = items[0].json[\"Approver callback notification\"].replace(/<name>/g,$node[\"New record on leave record log Sheet\"].json[\"First Name\"]+\" \"+$node[\"New record on leave record log Sheet\"].json[\"Last Name\"])\r\nvar replaceApproverDate = replaceApproverName.replace(/<submissionDate>/g,$node[\"New record on leave record log Sheet\"].json[\"Form Submittion Date\"])\r\nvar replaceApproverFormId = replaceApproverDate.replace(/<formId>/g,$node[\"New record on leave record log Sheet\"].json[\"Form Id\"])\r\nvar replaceApproverStartDate = replaceApproverFormId.replace(/<startDate>/g,$node[\"New record on leave record log Sheet\"].json[\"Start Leave Date\"])\r\nvar replaceApproverEndDate = replaceApproverStartDate.replace(/<endDate>/g,$node[\"New record on leave record log Sheet\"].json[\"End Leave Date\"])\r\nvar replaceApproverLeaveReason = replaceApproverEndDate.replace(/<leaveReason>/g,$node[\"New record on leave record log Sheet\"].json[\"Leave Reason\"])\r\n\r\n//Approver notification email format\r\nvar approverEmail = replaceApproverLeaveReason.replace(/(\\r\\n|\\n|\\r)/gm, \"<br>\")\r\n\r\nvar telegramId = items[0].json[\"Telegram chat Id\"]\r\n\r\nreturn {\r\n  \"applicant notification\":replaceApplicantDate,\r\n  \"approver telegram\" : replaceApproverLeaveReason,\r\n  \"approver email\" : approverEmail,\r\n  \"telegram Id\" : telegramId\r\n}\r\n"
+      },
+      "name": "Set configuration ( form submittion flow )",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        -4300,
+        3780
+      ],
+      "notesInFlow": true,
+      "notes": "Set configuration for applicant notification, telegram chat Id and approver notification."
+    },
+    {
+      "parameters": {
+        "functionCode": "//Applicant outcome notification \r\nvar replaceApplicantName = items[0].json[\"Applicant callback outcome notification\"].replace(/<name>/g,$node[\"Find applicant sheet\"].json[\"First Name\"]+\" \"+$node[\"Find applicant sheet\"].json[\"Last Name\"])\r\nvar replaceApplicantResponse = replaceApplicantName.replace(/<response>/g,$node[\"Get callback function\"].json[\"CallBack\"])\r\nvar replaceApplicantStartDate = replaceApplicantResponse.replace(/<startDate>/g,$node[\"Find applicant sheet\"].json[\"Start Leave Date\"])\r\nvar replaceApplicantEndDate = replaceApplicantStartDate.replace(/<endDate>/g,$node[\"Find applicant sheet\"].json[\"End Leave Date\"])\r\nvar replaceApplicantLeaveReason = replaceApplicantEndDate.replace(/<leaveReason>/g,$node[\"Find applicant sheet\"].json[\"Leave Reason\"])\r\n\r\n//Approver callback outcome notification\r\nvar replaceApproverResponse = items[0].json[\"Approver callback outcome notification\"].replace(/<response>/g,$node[\"Get callback function\"].json[\"CallBack\"])\r\nvar replaceApproverFormid = replaceApproverResponse.replace(/<formId>/g,$node[\"Get callback function\"].json[\"Form Id\"])\r\n\r\n//Telegram\r\nvar telegramId = items[0].json[\"Telegram chat Id\"]\r\n\r\n//Calendar\r\nvar calendarId = items[0].json[\"Calendar Id\"]\r\nreturn {\r\n  \"approver\":replaceApproverFormid,\r\n  \"applicant\":replaceApplicantLeaveReason,\r\n  \"telegram Id\":telegramId,\r\n  \"calendar Id\" : calendarId,\r\n}\r\n\r\n"
+      },
+      "name": "Set configuration ( callback flow )",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        -260,
+        3740
+      ],
+      "notesInFlow": true,
+      "notes": "Set configuration for applicant outcome, telegram chat Id and approver action."
+    },
+    {
+      "parameters": {},
+      "name": "Callback wait",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [
+        880,
+        3760
+      ],
+      "webhookId": "378aaa68-d929-46d7-a739-55903be1e82c",
+      "notesInFlow": true,
+      "disabled": true,
+      "notes": "Wait for a day"
+    },
+    {
+      "parameters": {
+        "chatId": "={{$node[\"Set configuration ( callback flow )\"].json[\"telegram Id\"]}}",
+        "text": "={{$node[\"Set configuration ( callback flow )\"].json[\"applicant\"]}}",
+        "additionalFields": {}
+      },
+      "name": "Applicant outcome telegram",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        1200,
+        3900
+      ],
+      "notesInFlow": true,
+      "credentials": {
+        "telegramApi": {
+          "id": "1",
+          "name": "Telegram leave request account"
+        }
+      },
+      "notes": "Send telegram to applicant about callback result"
+    },
+    {
+      "parameters": {
+        "values": {
+          "number": [
+            {
+              "name": "Form Id",
+              "value": "={{$node[\"Set callback dateTime and form Id Function\"].json[\"Form Id\"]}}"
+            }
+          ],
+          "string": [
+            {
+              "name": "Process Status",
+              "value": "={{$node[\"Get callback function\"].json[\"CallBack\"]}}"
+            },
+            {
+              "name": "Process End Date",
+              "value": "={{$node[\"Set callback dateTime and form Id Function\"].json[\"Process end date\"]}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Set applicant outcome",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        1560,
+        3760
+      ],
+      "notesInFlow": true,
+      "notes": "Set applicant outcome based on process status, form id and process end date"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "sheetId": "1RSy4ShIcrlvIdk1y_yQ9WFODx38f7SrKzs7X50b2WRU",
+        "range": "A:O",
+        "options": {
+          "valueRenderMode": "FORMATTED_VALUE"
+        }
+      },
+      "name": "Configuration sheet ( rejected/deadline flow )",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 1,
+      "position": [
+        -2500,
+        2900
+      ],
+      "notesInFlow": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "4",
+          "name": "Google Sheets account"
+        }
+      },
+      "notes": "Get configuration from configuration sheet"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "sheetId": "1g3wRIw7doc0FQdMOayUS7uRycxW14pRaQoh2dTK-gcw",
+        "range": "A:K",
+        "options": {
+          "valueRenderMode": "FORMATTED_VALUE"
+        }
+      },
+      "name": "Get all applicants sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 1,
+      "position": [
+        -2500,
+        2700
+      ],
+      "notesInFlow": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "4",
+          "name": "Google Sheets account"
+        }
+      },
+      "notes": "Get all applicants in leave request sheet"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json[\"reminder\"]}}",
+              "value2": "true"
+            },
+            {
+              "value1": "={{$json[\"deadline\"]}}",
+              "value2": "true"
+            }
+          ]
+        },
+        "combineOperation": "any"
+      },
+      "name": "Reminder/Deadline If",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        -1120,
+        2700
+      ],
+      "notesInFlow": true,
+      "notes": "Check if deadline or reminder is true.\n\nIf its true, go to true. Else go to false"
+    },
+    {
+      "parameters": {
+        "functionCode": "return items;\r\n\r\n"
+      },
+      "name": "Set configuration sheet ( rejected/deadline flow )",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        -2240,
+        2900
+      ],
+      "notesInFlow": true,
+      "notes": "Set configuration reminder/deadline flow"
+    },
+    {
+      "parameters": {
+        "chatId": "={{$node[\"Deadline If\"].json[\"telegramId\"]}}",
+        "text": "={{$node[\"Set approver reminder notification\"].json[\"Approver reminder notification\"]}}",
+        "additionalFields": {}
+      },
+      "name": "Reminder telegram",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        -240,
+        2940
+      ],
+      "notesInFlow": true,
+      "credentials": {
+        "telegramApi": {
+          "id": "1",
+          "name": "Telegram leave request account"
+        }
+      },
+      "notes": "Send reminder to approver via telegram"
+    },
+    {
+      "parameters": {
+        "fromEmail": "Project3.2022.nyp@gmail.com",
+        "toEmail": "={{$node[\"Configuration sheet ( rejected/deadline flow )\"].json[\"Approver Email\"]}}",
+        "subject": "=Reminder Form Id {{$node[\"Set approver reminder notification\"].json[\"Form Id\"]}}",
+        "text": "={{$node[\"Set approver reminder notification\"].json[\"Approver reminder notification\"]}}",
+        "options": {}
+      },
+      "name": "Reminder email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 1,
+      "position": [
+        40,
+        2940
+      ],
+      "notesInFlow": true,
+      "credentials": {
+        "smtp": {
+          "id": "2",
+          "name": "SMTP account 2"
+        }
+      },
+      "notes": "Send reminder to approver via email"
+    },
+    {
+      "parameters": {
+        "chatId": "={{$node[\"Deadline If\"].json[\"telegramId\"]}}",
+        "text": "={{$node[\"Set applicant and approver deadline outcome\"].json[\"Applicant deadline outcome notification\"]}}",
+        "additionalFields": {}
+      },
+      "name": "Deadline applicant telegram",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        940,
+        2700
+      ],
+      "notesInFlow": true,
+      "credentials": {
+        "telegramApi": {
+          "id": "1",
+          "name": "Telegram leave request account"
+        }
+      },
+      "notes": "Send deadline telegram to applicant"
+    },
+    {
+      "parameters": {
+        "fromEmail": "n301030@gmail.com",
+        "toEmail": "={{$node[\"Set applicant and approver deadline outcome\"].json[\"Email\"]}}",
+        "subject": "=Leave request {{$node[\"Set applicant deadline\"].json[\"Process Status\"]}}",
+        "text": "={{$node[\"Set applicant and approver deadline outcome\"].json[\"Applicant deadline outcome notification\"]}}",
+        "options": {}
+      },
+      "name": "Deadline applicant email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 1,
+      "position": [
+        1240,
+        2700
+      ],
+      "notesInFlow": true,
+      "credentials": {
+        "smtp": {
+          "id": "2",
+          "name": "SMTP account 2"
+        }
+      },
+      "notes": "Send deadline email to applicant"
+    },
+    {
+      "parameters": {
+        "fromEmail": "Project3.2022.nyp@gmail.com",
+        "toEmail": "={{$node[\"Configuration sheet ( rejected/deadline flow )\"].json[\"Approver Email\"]}}",
+        "subject": "=Deadline Form Id {{$json[\"Form Id\"]}}",
+        "text": "={{$node[\"Set applicant and approver deadline outcome\"].json[\"Approver deadline notification\"]}}",
+        "options": {}
+      },
+      "name": "Deadline approver email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 1,
+      "position": [
+        40,
+        2700
+      ],
+      "notesInFlow": true,
+      "credentials": {
+        "smtp": {
+          "id": "2",
+          "name": "SMTP account 2"
+        }
+      },
+      "notes": "Send deadline email to approver"
+    },
+    {
+      "parameters": {
+        "chatId": "={{$node[\"Deadline If\"].json[\"telegramId\"]}}",
+        "text": "={{$node[\"Set applicant and approver deadline outcome\"].json[\"Approver deadline notification\"]}}",
+        "additionalFields": {}
+      },
+      "name": "Deadline approver telegram",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        -240,
+        2700
+      ],
+      "notesInFlow": true,
+      "credentials": {
+        "telegramApi": {
+          "id": "1",
+          "name": "Telegram leave request account"
+        }
+      },
+      "notes": "Send deadline telegram to approver"
+    },
+    {
+      "parameters": {
+        "functionCode": "var currentDateTime = new Date().toLocaleString('en-SG');\nvar reminderDay = parseInt($node[\"Set configuration sheet ( rejected/deadline flow )\"].json[\"Interval reminder days\"]);\nvar deadlineDay = parseInt($node[\"Set configuration sheet ( rejected/deadline flow )\"].json[\"Deadline day\"]);\nvar telegramId = parseInt($node[\"Set configuration sheet ( rejected/deadline flow )\"].json[\"Telegram chat Id\"]);\nvar applicantDeadline = $node[\"Set configuration sheet ( rejected/deadline flow )\"].json[\"Applicant deadline outcome notification\"];\nvar approverDeadline = $node[\"Set configuration sheet ( rejected/deadline flow )\"].json[\"Approver deadline notification\"];\nvar approverReminder = $node[\"Set configuration sheet ( rejected/deadline flow )\"].json[\"Approver reminder notification\"];\n\nreminderDay = reminderDay * 86400000; // 1 day = 86400000\n\nfor (item of items) {\n  var reminderCurrentDate = new Date();\n  //Set datetime format\n  const dateTimeArray = item.json['Form Submittion Date'].split(\",\");\n  const dateArray = dateTimeArray[0].split(\"/\");\n  const timeArray = dateTimeArray[1].split(\" \");\n  const exactTimeArray = timeArray[1].split(\":\");\n\n  var date = dateArray[0];\n  var month = dateArray[1]-1;\n  var year = dateArray[2];\n\n  var dateFordeadline = dateArray[0]+ deadlineDay;\n\n  var hour = exactTimeArray[0];\n  var min = exactTimeArray[1];\n  var sec = exactTimeArray[2];\n\n  if(timeArray[2] == 'pm'|| timeArray[2] == 'PM'){\n    hour = 12 + parseInt(hour);\n  }\n  \n  var submittionDate = new Date(year,month,date,hour,min,sec);\n  var setDeadlineDate = submittionDate.setDate(submittionDate.getDate() + deadlineDay);\n  var deadlineDate = new Date(setDeadlineDate);\n  var deadlineDateTime = deadlineDate.toLocaleString('en-SG');\n\n  var checkReminder = item.json[\"Next Reminder Date\"];\n  var checkDeadline = deadlineDate.getTime();\n\n  //set json\n  item.json[\"Form Id\"] = parseInt(item.json[\"Form Id\"]);\n\n  //Interval reminder check\n  if(reminderCurrentDate.getTime() >= checkReminder){ //exactly after remindar day\n    var setNextReminderDate = new Date(checkReminder);\n    setNextReminderDate = setNextReminderDate.setDate(setNextReminderDate.getDate()+reminderDay);\n    item.json[\"Next Reminder Date\"] = new Date(setNextReminderDate).getTime();\n    item.json.reminder = \"true\";\n  }\n  else{\n    item.json.reminder = \"false\";\n  }\n\n  //deadline check\n  if(reminderCurrentDate >= checkDeadline){\n  item.json.deadline = \"true\";\n  }\n  else{\n    item.json.deadline = \"false\";\n  }\n\n  item.json.currentDateTime = currentDateTime;\n  item.json.deadlineDateTime = deadlineDateTime;\n\n  //json configuration \n  item.json.telegramId = telegramId;\n  item.json[\"Applicant deadline outcome notification\"] = applicantDeadline;\n  item.json[\"Approver deadline notification\"] = approverDeadline;\n  item.json[\"Approver reminder notification\"] = approverReminder;\n}\n\nreturn items;"
+      },
+      "name": "Set deadline and reminder Function",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        -1380,
+        2700
+      ],
+      "notesInFlow": true,
+      "notes": "Set boolean for deadline and reminder.\n\nDeadline will be using current dateTime - form submittion datetime. If it is more than 7 days, deadline will be true.\n\nReminder will be true if remander is 0"
+    },
+    {
+      "parameters": {
+        "mode": "mergeByIndex",
+        "join": "outer"
+      },
+      "name": "Merge1",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 1,
+      "position": [
+        -1940,
+        2700
+      ]
+    },
+    {
+      "parameters": {
+        "functionCode": "\nfor (item of items) {\n  //For approver deadline outcome notification\n  var replaceApproverFormId = $node[\"Deadline If\"].json[\"Approver deadline notification\"].replace(/<formId>/g, $node[\"Deadline If\"].json[\"Form Id\"]);\n  var replaceApproverName = replaceApproverFormId.replace(/<name>/g, $node[\"Deadline If\"].json[\"First Name\"] + \" \" + $node[\"Deadline If\"].json[\"Last Name\"]);\n  var replaceApplicantStartDate = replaceApproverName.replace(/<startDate>/g, $node[\"Deadline If\"].json[\"Start Leave Date\"]);\n  var replaceApplicantEndDate = replaceApplicantStartDate.replace(/<endDate>/g, $node[\"Deadline If\"].json[\"End Leave Date\"]);\n  var replaceApplicantLeaveReason = replaceApplicantEndDate.replace(/<leaveReason>/g, $node[\"Deadline If\"].json[\"Leave Reason\"]);\n\n  item.json[\"Approver deadline notification\"] = replaceApplicantLeaveReason;\n\n  //For applicant deadline outcome notification\n  var replaceApproverFormId = $node[\"Deadline If\"].json[\"Applicant deadline outcome notification\"].replace(/<formId>/g, $node[\"Deadline If\"].json[\"Form Id\"]);\n  var replaceApproverName = replaceApproverFormId.replace(/<name>/g, $node[\"Deadline If\"].json[\"First Name\"] + \" \" + $node[\"Deadline If\"].json[\"Last Name\"]);\n  var replaceApplicantStartDate = replaceApproverName.replace(/<startDate>/g, $node[\"Deadline If\"].json[\"Start Leave Date\"]);\n  var replaceApplicantEndDate = replaceApplicantStartDate.replace(/<endDate>/g, $node[\"Deadline If\"].json[\"End Leave Date\"]);\n  var replaceApplicantLeaveReason = replaceApplicantEndDate.replace(/<leaveReason>/g, $node[\"Deadline If\"].json[\"Leave Reason\"]);\n\n  item.json[\"Applicant deadline outcome notification\"] = replaceApplicantLeaveReason;\n\n}\n\nreturn items;"
+      },
+      "name": "Set applicant and approver deadline outcome",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        -500,
+        2700
+      ],
+      "notesInFlow": true,
+      "notes": "Set applicant and approver outcome notification based on deadline"
+    },
+    {
+      "parameters": {
+        "functionCode": "\nfor (item of items) {\n  //Set approver reminder notification\n  var replaceApproverFormId = $node[\"Deadline If\"].json[\"Approver reminder notification\"].replace(/<formId>/g, $node[\"Deadline If\"].json[\"Form Id\"]);\n  var replaceApproverName = replaceApproverFormId.replace(/<name>/g, $node[\"Deadline If\"].json[\"First Name\"] + \" \" + $node[\"Deadline If\"].json[\"Last Name\"]);\n  var replaceApplicantStartDate = replaceApproverName.replace(/<startDate>/g, $node[\"Deadline If\"].json[\"Start Leave Date\"]);\n  var replaceApplicantEndDate = replaceApplicantStartDate.replace(/<endDate>/g, $node[\"Deadline If\"].json[\"End Leave Date\"]);\n  var replaceApplicantLeaveReason = replaceApplicantEndDate.replace(/<leaveReason>/g, $node[\"Deadline If\"].json[\"Leave Reason\"]);\n  var replaceApplicantDeadline = replaceApplicantLeaveReason.replace(/<deadlineDate>/g, $node[\"Deadline If\"].json[\"deadlineDateTime\"]);\n\n  item.json[\"Approver reminder notification\"] = replaceApplicantDeadline\n\n}\n\nreturn items;"
+      },
+      "name": "Set approver reminder notification",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        -500,
+        2940
+      ],
+      "notesInFlow": true,
+      "notes": "Set approver notification based on reminder"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "operation": "update",
+        "sheetId": "1g3wRIw7doc0FQdMOayUS7uRycxW14pRaQoh2dTK-gcw",
+        "range": "A:K",
+        "key": "Form Id",
+        "options": {
+          "valueInputMode": "USER_ENTERED"
+        }
+      },
+      "name": "Applicant callback outcome sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 1,
+      "position": [
+        1860,
+        3760
+      ],
+      "notesInFlow": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "4",
+          "name": "Google Sheets account"
+        }
+      },
+      "notes": "Update applicant row based on applicant outcome"
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "Process Status",
+              "value": "rejected"
+            },
+            {
+              "name": "Process End Date",
+              "value": "={{$node[\"Deadline If\"].json[\"currentDateTime\"]}}"
+            }
+          ],
+          "number": [
+            {
+              "name": "Form Id",
+              "value": "={{$node[\"Deadline If\"].json[\"Form Id\"]}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Set applicant deadline",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        340,
+        2700
+      ],
+      "notesInFlow": true,
+      "notes": "Update process status 'deadline' for requests who passed the deadline"
+    },
+    {
+      "parameters": {
+        "mode": "mergeByKey",
+        "propertyName1": "Form Id",
+        "propertyName2": "Form Id"
+      },
+      "name": "Merge",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 1,
+      "position": [
+        -1660,
+        2700
+      ]
+    },
+    {
+      "parameters": {
+        "functionCode": "\n\n\n  const dateTimeArray = $node[\"Set form submittion\"].json['Form Submittion Date'].split(\",\");\n  const dateArray = dateTimeArray[0].split(\"/\");\n  const timeArray = dateTimeArray[1].split(\" \");\n  const exactTimeArray = timeArray[1].split(\":\");\n\n  var date = dateArray[0];\n  var month = dateArray[1]-1;\n  var year = dateArray[2];\n\n  var hour = exactTimeArray[0];\n  var min = exactTimeArray[1];\n  var sec = exactTimeArray[2];\n\n  if(timeArray[2] == 'pm'|| timeArray[2] == 'PM'){\n    hour = 12 + parseInt(hour);\n  }\n\n  var reminderDay = $node[\"Configuration sheet ( form submittion flow )\"].json[\"Interval reminder days\"];\n  var submittionDate = new Date(year,month,date,hour,min,sec);\n  setNextReminderDate = submittionDate.setDate(submittionDate.getDate()+reminderDay);\n// new Date(setNextReminderDate).getTime();\n\nreturn {\n  \"Form Id\" : $node[\"Set form submittion\"].json[\"Form Id\"],\n  \"Next Reminder Date\" : new Date(setNextReminderDate).getTime()\n};"
+      },
+      "name": "Set Reminder Progress",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        -3620,
+        3780
+      ]
+    },
+    {
+      "parameters": {
+        "values": {
+          "number": [
+            {
+              "name": "Form Id",
+              "value": "={{$node[\"Deadline If\"].json[\"Form Id\"]}}"
+            },
+            {
+              "name": "Next Reminder Date",
+              "value": "={{$node[\"Deadline If\"].json[\"Next Reminder Date\"]}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Set new reminder date",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        340,
+        2940
+      ],
+      "notesInFlow": true,
+      "notes": "Set new reminder date for leave request"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "operation": "update",
+        "sheetId": "Form Id",
+        "key": "Form Id",
+        "options": {
+          "valueInputMode": "USER_ENTERED"
+        }
+      },
+      "name": "Update new reminder date",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 1,
+      "position": [
+        640,
+        2940
+      ],
+      "notesInFlow": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "4",
+          "name": "Google Sheets account"
+        }
+      },
+      "notes": "Update Next Reminder Date "
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "sheetId": "1kAbHXd9bGdQxr5DZN8yfdInnCR2qK2ilUSSAlMSA7Hc",
+        "options": {
+          "valueRenderMode": "FORMATTED_VALUE"
+        }
+      },
+      "name": "Get leave request reminder sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 1,
+      "position": [
+        -2240,
+        2520
+      ],
+      "notesInFlow": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "4",
+          "name": "Google Sheets account"
+        }
+      },
+      "notes": "Get next reminder date"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "operation": "append",
+        "sheetId": "1kAbHXd9bGdQxr5DZN8yfdInnCR2qK2ilUSSAlMSA7Hc",
+        "range": "A:B",
+        "options": {
+          "valueInputMode": "USER_ENTERED"
+        }
+      },
+      "name": "Leave request reminder sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 1,
+      "position": [
+        -3320,
+        3780
+      ],
+      "notesInFlow": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "4",
+          "name": "Google Sheets account"
+        }
+      },
+      "notes": "Add next reminder date for leave request "
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "sheetId": "1kAbHXd9bGdQxr5DZN8yfdInnCR2qK2ilUSSAlMSA7Hc",
+        "range": "A:B",
+        "options": {}
+      },
+      "name": "Get form id reminder sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 1,
+      "position": [
+        1560,
+        3540
+      ],
+      "notesInFlow": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "4",
+          "name": "Google Sheets account"
+        }
+      },
+      "notes": "get form id from reminder sheet"
+    },
+    {
+      "parameters": {
+        "values": {
+          "number": [
+            {
+              "name": "rowIndex",
+              "value": "={{$position}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Set form id index",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        1780,
+        3540
+      ],
+      "notesInFlow": true,
+      "notes": "Get form id index"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{$node[\"Get form id reminder sheet\"].json[\"Form Id\"]}}",
+              "operation": "equal",
+              "value2": "={{$node[\"Get callback function\"].json[\"Form Id\"]}}"
+            }
+          ]
+        }
+      },
+      "name": "get form id if",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        1980,
+        3540
+      ],
+      "notesInFlow": true,
+      "notes": "Get form id based on callback form id "
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "operation": "delete",
+        "sheetId": "1kAbHXd9bGdQxr5DZN8yfdInnCR2qK2ilUSSAlMSA7Hc",
+        "toDelete": {
+          "rows": [
+            {
+              "sheetId": 0,
+              "startIndex": "={{1 + $json[\"rowIndex\"]}}"
+            }
+          ]
+        }
+      },
+      "name": "Delete form id reminder sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 1,
+      "position": [
+        2200,
+        3540
+      ],
+      "notesInFlow": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "4",
+          "name": "Google Sheets account"
+        }
+      },
+      "notes": "delete form id based on index "
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "sheetId": "1kAbHXd9bGdQxr5DZN8yfdInnCR2qK2ilUSSAlMSA7Hc",
+        "range": "A:B",
+        "options": {}
+      },
+      "name": "Get form id reminder sheet1",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 1,
+      "position": [
+        340,
+        2500
+      ],
+      "notesInFlow": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "4",
+          "name": "Google Sheets account"
+        }
+      },
+      "notes": "get form id from reminder sheet"
+    },
+    {
+      "parameters": {
+        "values": {
+          "number": [
+            {
+              "name": "rowIndex",
+              "value": "={{$position}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Set form id index1",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        640,
+        2500
+      ],
+      "notesInFlow": true,
+      "notes": "Get form id index"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{$node[\"Deadline If\"].json[\"Form Id\"]}}",
+              "operation": "equal",
+              "value2": "={{$node[\"Get callback function\"].json[\"Form Id\"]}}"
+            }
+          ]
+        }
+      },
+      "name": "get form id if1",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        940,
+        2500
+      ],
+      "notesInFlow": true,
+      "notes": "Get form id based on callback form id "
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "operation": "delete",
+        "sheetId": "1kAbHXd9bGdQxr5DZN8yfdInnCR2qK2ilUSSAlMSA7Hc",
+        "toDelete": {
+          "rows": [
+            {
+              "sheetId": 0,
+              "startIndex": "={{1 + $json[\"rowIndex\"]}}"
+            }
+          ]
+        }
+      },
+      "name": "Delete form id reminder sheet1",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 1,
+      "position": [
+        1240,
+        2480
+      ],
+      "notesInFlow": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "4",
+          "name": "Google Sheets account"
+        }
+      },
+      "notes": "delete form id based on index "
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        []
+      ]
+    },
+    "Notify applicant email": {
+      "main": [
+        [
+          {
+            "node": "Set Reminder Progress",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calendar update": {
+      "main": [
+        [
+          {
+            "node": "Callback wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Approve reject if": {
+      "main": [
+        [
+          {
+            "node": "Calendar update",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Callback wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Double action if": {
+      "main": [
+        [
+          {
+            "node": "Set callback dateTime and form Id Function",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Approver callback website",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Approver existed callback website",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Applicant outcome email": {
+      "main": [
+        [
+          {
+            "node": "Set applicant outcome",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get form id reminder sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram callback function": {
+      "main": [
+        [
+          {
+            "node": "Get callback function",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google form trigger": {
+      "main": [
+        [
+          {
+            "node": "Check form Id sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Approver telegram callback trigger": {
+      "main": [
+        [
+          {
+            "node": "Telegram callback function",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Approver action email": {
+      "main": [
+        [
+          {
+            "node": "Approve reject if",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find applicant sheet": {
+      "main": [
+        [
+          {
+            "node": "Double action if",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "New record on leave record log Sheet": {
+      "main": [
+        [
+          {
+            "node": "Configuration sheet ( form submittion flow )",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email CallBack set": {
+      "main": [
+        [
+          {
+            "node": "Email callback function",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get callback function": {
+      "main": [
+        [
+          {
+            "node": "Find applicant sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email callback function": {
+      "main": [
+        [
+          {
+            "node": "Get callback function",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rename Supporting document function": {
+      "main": [
+        [
+          {
+            "node": "Supporting document rename on google drive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gather supporting documents function": {
+      "main": [
+        [
+          {
+            "node": "Rename Supporting document function",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check supporting document IF": {
+      "main": [
+        [
+          {
+            "node": "Gather supporting documents function",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Set form submittion",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set form submittion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cron": {
+      "main": [
+        [
+          {
+            "node": "Get all applicants sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pending check": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Deadline If": {
+      "main": [
+        [
+          {
+            "node": "Set applicant and approver deadline outcome",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set approver reminder notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Deadline applicant sheet": {
+      "main": [
+        [
+          {
+            "node": "Deadline applicant telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check form Id sheet": {
+      "main": [
+        [
+          {
+            "node": "Set DateTime and new Form Id function",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set DateTime and new Form Id function": {
+      "main": [
+        [
+          {
+            "node": "Check supporting document IF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set form submittion": {
+      "main": [
+        [
+          {
+            "node": "New record on leave record log Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Approver email callback trigger": {
+      "main": [
+        [
+          {
+            "node": "Email CallBack set",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set callback dateTime and form Id Function": {
+      "main": [
+        [
+          {
+            "node": "Configuration sheet ( callback flow )",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Configuration sheet ( callback flow )": {
+      "main": [
+        [
+          {
+            "node": "Set configuration ( callback flow )",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Configuration sheet ( form submittion flow )": {
+      "main": [
+        [
+          {
+            "node": "Set configuration ( form submittion flow )",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set configuration ( form submittion flow )": {
+      "main": [
+        [
+          {
+            "node": "Notify applicant email",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Notify applicant telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set configuration ( callback flow )": {
+      "main": [
+        [
+          {
+            "node": "Approver action telegram",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Approver action email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Callback wait": {
+      "main": [
+        [
+          {
+            "node": "Applicant outcome email",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Applicant outcome telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set applicant outcome": {
+      "main": [
+        [
+          {
+            "node": "Applicant callback outcome sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Configuration sheet ( rejected/deadline flow )": {
+      "main": [
+        [
+          {
+            "node": "Set configuration sheet ( rejected/deadline flow )",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get all applicants sheet": {
+      "main": [
+        [
+          {
+            "node": "Pending check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reminder/Deadline If": {
+      "main": [
+        [
+          {
+            "node": "Deadline If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set configuration sheet ( rejected/deadline flow )": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Reminder telegram": {
+      "main": [
+        [
+          {
+            "node": "Reminder email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reminder email": {
+      "main": [
+        [
+          {
+            "node": "Set new reminder date",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Deadline applicant telegram": {
+      "main": [
+        [
+          {
+            "node": "Deadline applicant email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Deadline approver email": {
+      "main": [
+        [
+          {
+            "node": "Set applicant deadline",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get form id reminder sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Deadline approver telegram": {
+      "main": [
+        [
+          {
+            "node": "Deadline approver email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set deadline and reminder Function": {
+      "main": [
+        [
+          {
+            "node": "Reminder/Deadline If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Set applicant and approver deadline outcome": {
+      "main": [
+        [
+          {
+            "node": "Deadline approver telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set approver reminder notification": {
+      "main": [
+        [
+          {
+            "node": "Reminder telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set applicant deadline": {
+      "main": [
+        [
+          {
+            "node": "Deadline applicant sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Set deadline and reminder Function",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Reminder Progress": {
+      "main": [
+        [
+          {
+            "node": "Leave request reminder sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set new reminder date": {
+      "main": [
+        [
+          {
+            "node": "Update new reminder date",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get leave request reminder sheet": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Leave request reminder sheet": {
+      "main": [
+        [
+          {
+            "node": "Send approver email",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send approver telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get form id reminder sheet": {
+      "main": [
+        [
+          {
+            "node": "Set form id index",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set form id index": {
+      "main": [
+        [
+          {
+            "node": "get form id if",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get form id if": {
+      "main": [
+        [
+          {
+            "node": "Delete form id reminder sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get form id reminder sheet1": {
+      "main": [
+        [
+          {
+            "node": "Set form id index1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set form id index1": {
+      "main": [
+        [
+          {
+            "node": "get form id if1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get form id if1": {
+      "main": [
+        [
+          {
+            "node": "Delete form id reminder sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "saveExecutionProgress": true,
+    "errorWorkflow": "10"
+  },
+  "id": 12
+}
