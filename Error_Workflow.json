@@ -1,0 +1,125 @@
+{
+  "name": "Error Workflow",
+  "nodes": [
+    {
+      "parameters": {},
+      "name": "Start",
+      "type": "n8n-nodes-base.start",
+      "typeVersion": 1,
+      "position": [
+        240,
+        300
+      ]
+    },
+    {
+      "parameters": {},
+      "name": "Error Trigger",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        300,
+        1020
+      ],
+      "notesInFlow": true,
+      "executeOnce": false,
+      "alwaysOutputData": false,
+      "notes": "Trigger when there is a error in the workflow"
+    },
+    {
+      "parameters": {
+        "chatId": "-1001529878161",
+        "text": "=Workflow error!!!\n\n{{$json[\"execution\"][\"error\"][\"message\"]}}\n{{$json[\"execution\"][\"lastNodeExecuted\"]}} failed to execute",
+        "additionalFields": {}
+      },
+      "name": "Technician telegram1",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        720,
+        1020
+      ],
+      "notesInFlow": true,
+      "executeOnce": true,
+      "credentials": {
+        "telegramApi": {
+          "id": "6",
+          "name": "Telegram account"
+        }
+      },
+      "notes": "Send telegram to technician about the error."
+    },
+    {
+      "parameters": {
+        "fromEmail": "error@workflow.com",
+        "toEmail": "=202849L@mymail.nyp.edu.sg",
+        "text": "=An Error has occurred in the reminder flow",
+        "options": {}
+      },
+      "name": "Send Email to Techinician",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 1,
+      "position": [
+        920,
+        1020
+      ],
+      "credentials": {
+        "smtp": {
+          "id": "1",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "unit": "seconds"
+      },
+      "name": "Wait",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [
+        500,
+        1020
+      ],
+      "webhookId": "0b9edf9e-d3b1-4e19-b20a-6a0ea2198f98",
+      "executeOnce": true
+    }
+  ],
+  "connections": {
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Technician telegram1": {
+      "main": [
+        [
+          {
+            "node": "Send Email to Techinician",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Technician telegram1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {},
+  "id": 10
+}
