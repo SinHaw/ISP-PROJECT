@@ -7,8 +7,8 @@
       "type": "n8n-nodes-base.start",
       "typeVersion": 1,
       "position": [
-        240,
-        300
+        1280,
+        340
       ]
     },
     {
@@ -17,7 +17,7 @@
       "type": "n8n-nodes-base.errorTrigger",
       "typeVersion": 1,
       "position": [
-        300,
+        260,
         1020
       ],
       "notesInFlow": true,
@@ -27,23 +27,205 @@
     },
     {
       "parameters": {
-        "chatId": "-1001529878161",
-        "text": "=Workflow error!!!\n\n{{$json[\"execution\"][\"error\"][\"message\"]}}\n{{$json[\"execution\"][\"lastNodeExecuted\"]}} failed to execute",
+        "unit": "seconds"
+      },
+      "name": "Wait",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [
+        420,
+        1020
+      ],
+      "webhookId": "0b9edf9e-d3b1-4e19-b20a-6a0ea2198f98",
+      "executeOnce": true,
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "sheetId": "1RSy4ShIcrlvIdk1y_yQ9WFODx38f7SrKzs7X50b2WRU",
+        "range": "A:U",
+        "options": {}
+      },
+      "name": "Configuration sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 1,
+      "position": [
+        600,
+        1020
+      ],
+      "notesInFlow": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "4",
+          "name": "Google Sheets account"
+        }
+      },
+      "notes": "Get configuration from configuration sheet"
+    },
+    {
+      "parameters": {
+        "keepOnlySet": true,
+        "values": {
+          "string": [
+            {
+              "name": "Workflow",
+              "value": "."
+            },
+            {
+              "name": "Status",
+              "value": "down"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Set",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        1360,
+        580
+      ]
+    },
+    {
+      "parameters": {
+        "functionCode": "const length = items.length;\nvar Fname = items[length-1].json['First name']\nvar Lname = items[length-1].json['Last name']\nvar email = items[length-1].json['Email']\nvar phoneNumber = items[length-1].json['Phone number']\nvar LeaveStartDate = new Date(items[length-1].json['Leave start date']).toISOString().split('T')[0]\nvar LeaveEndDate = new Date(items[length-1].json['Leave end date']).toISOString().split('T')[0]\nvar ReasonOfLeaving = items[length-1].json['Reason of leaving']\nif(items[length-1].json['Supporting documents (Image, pdf, doc, etc)']!=null){\n  var documents = items[length-1].json['Supporting documents (Image, pdf, doc, etc)'].substring(items[length-1].json['Supporting documents (Image, pdf, doc, etc)'].indexOf(\"=\")+1);\n\n}\nreturn [\n  {\n    \"First name\" : Fname,\n    \"Last name\":Lname,\n    \"Email\": email,\n    \"Phone number\":phoneNumber,\n    \"Leave start date\":LeaveStartDate,\n    \"Leave end date\": LeaveEndDate,\n    \"Reason of leaving\":ReasonOfLeaving,\n    \"Supporting documents (Image, pdf, doc, etc)\":documents\n  }\n]"
+      },
+      "name": "Get Last Row",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        1840,
+        600
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "sheetId": "={{$node[\"Configuration sheet\"].json[\"Raw Data\"]}}",
+        "range": "A:i",
+        "options": {
+          "valueRenderMode": "FORMATTED_VALUE"
+        }
+      },
+      "name": "Get Raw Data Sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 1,
+      "position": [
+        1700,
+        580
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "4",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$node[\"Error Trigger\"].json[\"execution\"][\"lastNodeExecuted\"]}} {{$node[\"Set2\"].json[\"sda\"]}}",
+              "operation": "regex",
+              "value2": "[G][F][T]"
+            }
+          ]
+        }
+      },
+      "name": "IF",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        760,
+        1020
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "operation": "append",
+        "sheetId": "={{$node[\"Configuration sheet\"].json[\"Failed Request\"]}}",
+        "range": "A:H",
+        "options": {}
+      },
+      "name": "Append into fail request",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 1,
+      "position": [
+        1980,
+        580
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "4",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "keepOnlySet": true,
+        "values": {
+          "string": [
+            {
+              "name": "Workflow",
+              "value": "."
+            },
+            {
+              "name": "Status",
+              "value": "down"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Set1",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        1340,
+        1040
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "={{$node[\"Configuration sheet\"].json[\"technician telegram chat id\"]}}",
+        "text": "=Workflow error!!!\n\n{{$node[\"Error Trigger\"].json[\"execution\"][\"error\"][\"message\"]}}\n{{$node[\"Error Trigger\"].json[\"execution\"][\"lastNodeExecuted\"]}} failed to execute",
+        "replyMarkup": "inlineKeyboard",
+        "inlineKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "Maintenance Finished",
+                    "additionalFields": {
+                      "callback_data": "Finished"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
         "additionalFields": {}
       },
-      "name": "Technician telegram1",
+      "name": "Technician telegram",
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1,
       "position": [
-        720,
-        1020
+        960,
+        1040
       ],
       "notesInFlow": true,
       "executeOnce": true,
       "credentials": {
         "telegramApi": {
-          "id": "6",
-          "name": "Telegram account"
+          "id": "14",
+          "name": "ErrorBot"
         }
       },
       "notes": "Send telegram to technician about the error."
@@ -52,15 +234,16 @@
       "parameters": {
         "fromEmail": "error@workflow.com",
         "toEmail": "=202849L@mymail.nyp.edu.sg",
-        "text": "=An Error has occurred in the reminder flow",
+        "subject": "Error Workflow",
+        "html": "=Workflow error!!!\n\n{{$node[\"Error Trigger\"].json[\"execution\"][\"error\"][\"message\"]}}\n{{$node[\"Error Trigger\"].json[\"execution\"][\"lastNodeExecuted\"]}} failed to execute\n\n    <a href=\"https://dangerous-octopus-60.hooks.n8n.cloud/webhook-test/maintenance?workflow=GFT\" class=\"ISPreject-btn\" style=\"text-decoration: none;\">\n      <div class=\"ISPbtn\" style=\"padding-top:12px;height: 30px; background-color: gray;color: white;font-weight: bold;border-radius: 20px;display: flex;align-items: center; width:200px;\">\n        Maintenance finished\n      </div>\n    </a>",
         "options": {}
       },
-      "name": "Send Email to Techinician",
+      "name": "Send Email to Techinician-GFT",
       "type": "n8n-nodes-base.emailSend",
       "typeVersion": 1,
       "position": [
-        920,
-        1020
+        1160,
+        580
       ],
       "credentials": {
         "smtp": {
@@ -71,17 +254,113 @@
     },
     {
       "parameters": {
-        "unit": "seconds"
+        "fromEmail": "error@workflow.com",
+        "toEmail": "=202849L@mymail.nyp.edu.sg",
+        "subject": "Error Workflow",
+        "html": "=Workflow error!!!\n\n{{$node[\"Error Trigger\"].json[\"execution\"][\"error\"][\"message\"]}}\n{{$node[\"Error Trigger\"].json[\"execution\"][\"lastNodeExecuted\"]}} failed to execute\n\n    <a href=\"https://dangerous-octopus-60.hooks.n8n.cloud/webhook-test/maintenance\" class=\"ISPreject-btn\" style=\"text-decoration: none;\">\n      <div class=\"ISPbtn\" style=\"padding-top:12px;height: 30px; background-color: gray;color: white;font-weight: bold;border-radius: 20px;display: flex;align-items: center; width:200px;\">\n        Maintenance finished\n      </div>\n    </a>",
+        "options": {}
       },
-      "name": "Wait",
-      "type": "n8n-nodes-base.wait",
+      "name": "Send Email to Techinician",
+      "type": "n8n-nodes-base.emailSend",
       "typeVersion": 1,
       "position": [
-        500,
-        1020
+        1160,
+        1040
       ],
-      "webhookId": "0b9edf9e-d3b1-4e19-b20a-6a0ea2198f98",
-      "executeOnce": true
+      "credentials": {
+        "smtp": {
+          "id": "1",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "operation": "update",
+        "sheetId": "={{$node[\"Configuration sheet\"].json[\"Workflow status\"]}}",
+        "key": "Workflow",
+        "options": {
+          "valueInputMode": "USER_ENTERED"
+        }
+      },
+      "name": "Update Status-GFT",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 1,
+      "position": [
+        1540,
+        580
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "4",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "operation": "update",
+        "sheetId": "={{$node[\"Configuration sheet\"].json[\"Workflow status\"]}}",
+        "key": "Workflow",
+        "options": {
+          "valueInputMode": "USER_ENTERED"
+        }
+      },
+      "name": "Update Status",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 1,
+      "position": [
+        1520,
+        1040
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "4",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{$node[\"Configuration sheet\"].json[\"technician telegram chat id\"]}}",
+        "text": "=Workflow error!!!\n\n{{$node[\"Error Trigger\"].json[\"execution\"][\"error\"][\"message\"]}}\n{{$node[\"Error Trigger\"].json[\"execution\"][\"lastNodeExecuted\"]}} failed to execute",
+        "replyMarkup": "inlineKeyboard",
+        "inlineKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "Maintenance Finished",
+                    "additionalFields": {
+                      "callback_data": "Finished_GFT"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "additionalFields": {}
+      },
+      "name": "Technician telegram-GFT",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [
+        960,
+        580
+      ],
+      "notesInFlow": true,
+      "executeOnce": true,
+      "credentials": {
+        "telegramApi": {
+          "id": "6",
+          "name": "Telegram account"
+        }
+      },
+      "notes": "Send telegram to technician about the error."
     }
   ],
   "connections": {
@@ -96,7 +375,91 @@
         ]
       ]
     },
-    "Technician telegram1": {
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Configuration sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Configuration sheet": {
+      "main": [
+        [
+          {
+            "node": "IF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set": {
+      "main": [
+        [
+          {
+            "node": "Update Status-GFT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Raw Data Sheet": {
+      "main": [
+        [
+          {
+            "node": "Get Last Row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Last Row": {
+      "main": [
+        [
+          {
+            "node": "Append into fail request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF": {
+      "main": [
+        [
+          {
+            "node": "Technician telegram-GFT",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Technician telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set1": {
+      "main": [
+        [
+          {
+            "node": "Update Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Technician telegram": {
       "main": [
         [
           {
@@ -107,11 +470,44 @@
         ]
       ]
     },
-    "Wait": {
+    "Send Email to Techinician-GFT": {
       "main": [
         [
           {
-            "node": "Technician telegram1",
+            "node": "Set",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Email to Techinician": {
+      "main": [
+        [
+          {
+            "node": "Set1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Status-GFT": {
+      "main": [
+        [
+          {
+            "node": "Get Raw Data Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Technician telegram-GFT": {
+      "main": [
+        [
+          {
+            "node": "Send Email to Techinician-GFT",
             "type": "main",
             "index": 0
           }
